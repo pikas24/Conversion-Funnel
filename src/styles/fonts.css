@@ -1,0 +1,12 @@
+/* Medical Elite Boutique - Typography System */
+
+/* Headline / Title Font - Cormorant Garamond (luxury, editorial, authority) */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+
+/* Subheadline & Body Font - Plus Jakarta Sans (modern, clean, readable) */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-headline: 'Cormorant Garamond', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}

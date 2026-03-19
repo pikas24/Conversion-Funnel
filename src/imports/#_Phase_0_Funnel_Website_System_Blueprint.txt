@@ -1,0 +1,812 @@
+# Phase 0 — Planning & Documentation  
+## Conversion Funnel System Architecture Blueprint
+### Productized Funnel Framework  
+**Funnel Type:** 3-Page Conversion Funnel  
+**Pages:** Landing Page → Booking Page → Confirmation Page  
+**Purpose:** Lead Generation & Appointment Booking  
+**System Type:** Productized Funnel Architecture  
+
+---
+
+# 1. System Architecture Blueprint
+
+## 1.1 System Overview
+
+Sistem ini merupakan **conversion funnel berbasis web** yang dirancang untuk mengubah pengunjung menjadi **lead terverifikasi yang melakukan booking**.  
+
+Arsitektur sistem dirancang menggunakan prinsip **productized funnel architecture**, sehingga:
+
+- struktur sistem **terstandarisasi**
+- dapat **direplikasi pada banyak proyek**
+- **modular dan scalable**
+- memisahkan **frontend, backend, dan integrasi**
+
+Sistem terdiri dari empat layer utama:
+
+```
+
+Frontend Layer
+↓
+API / Backend Services
+↓
+Database Layer
+↓
+External Integrations
+
+```
+
+---
+
+# 1.2 Funnel Page Structure
+
+Struktur funnel terdiri dari tiga halaman utama:
+
+```
+
+Landing Page
+↓
+Booking Page
+↓
+Confirmation Page
+
+```
+
+Penjelasan fungsi halaman:
+
+| Page | Purpose |
+|-----|-----|
+| Landing Page | Mengkomunikasikan value proposition dan mengarahkan user ke booking |
+| Booking Page | Mengumpulkan data lead dan melakukan proses booking |
+| Confirmation Page | Mengkonfirmasi booking dan memberikan langkah selanjutnya |
+
+---
+
+# 1.3 Frontend Pages
+
+## Landing Page
+
+Landing page berfungsi sebagai **entry point** funnel.
+
+Tujuan utama halaman ini:
+
+- menarik perhatian pengunjung
+- menjelaskan value proposition
+- membangun trust
+- mendorong user melakukan booking
+
+Fungsi utama:
+
+```
+
+Present Offer
+↓
+Build Trust
+↓
+Drive CTA Click
+
+```
+
+---
+
+## Booking Page
+
+Booking page adalah halaman **lead capture utama**.
+
+Fungsi halaman ini:
+
+- mengumpulkan informasi calon pelanggan
+- melakukan pre-qualification
+- memungkinkan user memilih jadwal
+
+Proses utama:
+
+```
+
+User Input Data
+↓
+System Validation
+↓
+Booking Submission
+
+```
+
+---
+
+## Confirmation Page
+
+Confirmation page muncul setelah booking berhasil.
+
+Fungsi utama:
+
+- memberikan konfirmasi booking
+- menampilkan detail jadwal
+- memberikan langkah selanjutnya
+
+---
+
+# 1.4 Backend Services
+
+Backend bertanggung jawab terhadap **business logic** funnel.
+
+Layanan utama yang dibutuhkan:
+
+### Booking API
+
+Menangani proses booking user.
+
+Fungsi:
+
+- menerima data booking
+- validasi data
+- menyimpan ke database
+
+---
+
+### Lead Processing Service
+
+Mengelola data lead yang masuk.
+
+Fungsi:
+
+- memproses data booking
+- menyiapkan data untuk integrasi CRM
+
+---
+
+### Lead Scoring Service
+
+Menentukan kualitas lead berdasarkan input.
+
+Contoh faktor:
+
+```
+
+service_type
+booking_time
+user_response
+
+```
+
+Output:
+
+```
+
+lead_score
+
+```
+
+---
+
+### Notification Service
+
+Mengirim notifikasi setelah booking dibuat.
+
+Contoh:
+
+- email confirmation
+- internal notification
+
+---
+
+### Webhook Service
+
+Mengirim data lead ke sistem eksternal seperti CRM.
+
+---
+
+# 1.5 Database
+
+Database digunakan untuk menyimpan informasi sistem.
+
+Fungsi database:
+
+```
+
+Store booking data
+Store lead data
+Store lead score
+Store timestamps
+Store system logs
+
+```
+
+Database menjadi **source of truth** seluruh data funnel.
+
+---
+
+# 1.6 External Integrations
+
+Sistem dapat terintegrasi dengan berbagai layanan eksternal.
+
+Contoh integrasi:
+
+### Email Notification System
+
+Digunakan untuk mengirim:
+
+- booking confirmation
+- reminder email
+
+---
+
+### CRM Webhook
+
+Mengirim data lead ke CRM perusahaan.
+
+Data yang dikirim:
+
+```
+
+name
+email
+phone
+booking time
+lead score
+
+```
+
+---
+
+### Automation Tools
+
+Digunakan untuk menjalankan automasi marketing.
+
+Contoh automasi:
+
+```
+
+booking created
+↓
+send welcome email
+↓
+add user to CRM pipeline
+
+```
+
+---
+
+### Database Sync
+
+Digunakan untuk sinkronisasi data dengan sistem eksternal.
+
+---
+
+# 2. User Journey & Conversion Flow
+
+Berikut perjalanan pengguna dalam funnel.
+
+```
+
+Visitor arrives at landing page
+↓
+User reads value proposition
+↓
+User views testimonials and social proof
+↓
+User clicks CTA button
+↓
+User navigates to booking page
+↓
+User fills booking form
+↓
+User selects date and time
+↓
+User submits booking request
+↓
+System validates booking data
+↓
+Booking stored in database
+↓
+Lead scoring executed
+↓
+System triggers notifications
+↓
+System sends webhook to CRM
+↓
+User redirected to confirmation page
+
+```
+
+---
+
+## Conversion Goals
+
+| Stage | Conversion Goal |
+|------|------|
+Landing Page | CTA Click |
+Booking Page | Form Submission |
+Confirmation Page | Booking Confirmation |
+
+---
+
+# 3. Funnel Structure Document
+
+## 3.1 Landing Page Structure
+
+Komponen utama landing page:
+
+### Hero Section
+
+Elemen:
+
+- headline
+- subheadline
+- CTA button
+
+Tujuan:
+
+```
+
+Capture attention
+Communicate core offer
+Drive action
+
+```
+
+---
+
+### Value Proposition
+
+Menjelaskan manfaat utama layanan.
+
+Contoh elemen:
+
+- benefit list
+- problem statement
+- solution explanation
+
+---
+
+### Service Explanation
+
+Menjelaskan bagaimana layanan bekerja.
+
+Struktur umum:
+
+```
+
+Problem
+↓
+Solution
+↓
+Result
+
+```
+
+---
+
+### Social Proof
+
+Elemen yang membangun trust.
+
+Contoh:
+
+- client logos
+- review snippets
+- statistics
+
+---
+
+### Testimonials
+
+Menampilkan pengalaman pelanggan sebelumnya.
+
+---
+
+### FAQ Section
+
+Menjawab pertanyaan umum calon pelanggan.
+
+---
+
+### CTA Button
+
+Call-to-action utama.
+
+Contoh:
+
+```
+
+Book Free Consultation
+Schedule Your Appointment
+
+```
+
+---
+
+# 3.2 Booking Page Structure
+
+Booking page berisi form booking utama.
+
+### Booking Form
+
+Field utama:
+
+```
+
+Name
+Phone
+Email
+
+```
+
+---
+
+### Pre-Qualification Questions
+
+Digunakan untuk menilai kualitas lead.
+
+Contoh:
+
+```
+
+service interest
+budget range
+urgency
+
+```
+
+---
+
+### Date Selection
+
+User memilih tanggal booking.
+
+---
+
+### Time Selection
+
+User memilih waktu yang tersedia.
+
+---
+
+### Contact Information
+
+Data kontak utama user.
+
+---
+
+### Submit Booking Button
+
+Mengirim data booking ke backend.
+
+---
+
+# 3.3 Confirmation Page Structure
+
+Halaman ini memberikan konfirmasi booking.
+
+Komponen utama:
+
+### Booking Confirmation Message
+
+Pesan bahwa booking berhasil.
+
+---
+
+### Booking Details
+
+Menampilkan:
+
+```
+
+booking date
+booking time
+service type
+
+```
+
+---
+
+### Next Steps
+
+Memberikan instruksi selanjutnya.
+
+Contoh:
+
+```
+
+Check your email
+Prepare documents
+Join meeting link
+
+```
+
+---
+
+### Contact Information
+
+Informasi kontak jika user membutuhkan bantuan.
+
+---
+
+### Optional Share / Reminder
+
+Opsional:
+
+- add to calendar
+- share booking
+
+---
+
+# 4. API Overview
+
+Berikut gambaran API utama sistem.
+
+---
+
+### POST /api/bookings
+
+Digunakan untuk membuat booking baru.
+
+Fungsi:
+
+```
+
+Receive booking data
+Validate input
+Store booking
+Trigger automation
+
+```
+
+---
+
+### GET /api/bookings/{id}
+
+Digunakan untuk mengambil data booking berdasarkan ID.
+
+Digunakan oleh:
+
+```
+
+confirmation page
+admin system
+
+```
+
+---
+
+### POST /api/lead-score
+
+Digunakan untuk menghitung skor lead.
+
+Input:
+
+```
+
+booking data
+qualification answers
+
+```
+
+Output:
+
+```
+
+lead_score
+
+```
+
+---
+
+# 5. High-Level Database Model
+
+Model hubungan entitas utama:
+
+```
+
+User
+↓
+Booking
+↓
+Lead Score
+↓
+Notification
+
+```
+
+Penjelasan:
+
+- **User** membuat booking
+- **Booking** menghasilkan lead
+- **Lead Score** menentukan kualitas lead
+- **Notification** dikirim setelah booking dibuat
+
+---
+
+# 6. Database Schema
+
+## Table: bookings
+
+| Field | Type | Description |
+|------|------|------|
+id | UUID | primary identifier |
+booking_id | string | unique booking reference |
+name | string | nama user |
+phone | string | nomor telepon |
+email | string | alamat email |
+booking_date | date | tanggal booking |
+booking_time | time | waktu booking |
+service_type | string | jenis layanan |
+lead_score | integer | skor lead |
+status | string | status booking |
+created_at | timestamp | waktu pembuatan booking |
+
+---
+
+### Field Explanation
+
+**id**
+
+Primary key untuk setiap record.
+
+---
+
+**booking_id**
+
+ID unik yang digunakan sebagai referensi booking.
+
+---
+
+**name**
+
+Nama lengkap user.
+
+---
+
+**phone**
+
+Nomor telepon user.
+
+---
+
+**email**
+
+Alamat email user.
+
+---
+
+**booking_date**
+
+Tanggal yang dipilih user untuk appointment.
+
+---
+
+**booking_time**
+
+Waktu booking.
+
+---
+
+**service_type**
+
+Jenis layanan yang dipilih user.
+
+---
+
+**lead_score**
+
+Nilai kualitas lead.
+
+---
+
+**status**
+
+Status booking.
+
+Contoh:
+
+```
+
+pending
+confirmed
+cancelled
+
+```
+
+---
+
+**created_at**
+
+Timestamp ketika booking dibuat.
+
+---
+
+# 7. Integration Architecture
+
+Integrasi sistem berjalan melalui alur berikut:
+
+```
+
+Booking Created
+↓
+Save to Database
+↓
+Trigger Lead Scoring
+↓
+Send Email Notification
+↓
+Send Webhook to CRM
+↓
+Update Lead Status
+
+```
+
+---
+
+## Integration Flow Details
+
+### Booking → Database
+
+Setiap booking disimpan sebagai record.
+
+---
+
+### Booking → Email Notification
+
+Email dikirim ke user untuk konfirmasi booking.
+
+---
+
+### Booking → CRM Webhook
+
+Data lead dikirim ke CRM melalui webhook.
+
+Payload contoh:
+
+```
+
+name
+email
+phone
+booking_date
+booking_time
+lead_score
+
+```
+
+---
+
+### Booking → Automation Tools
+
+Automation dapat melakukan:
+
+```
+
+send welcome email
+assign lead owner
+trigger marketing sequence
+
+```
+
+---
+
+# Conclusion
+
+Dokumen ini mendefinisikan **arsitektur sistem funnel 3 halaman** yang dirancang sebagai **productized funnel framework**.
+
+Keuntungan pendekatan ini:
+
+- sistem **terstandarisasi**
+- mudah **direplikasi**
+- **scalable**
+- memisahkan **frontend, backend, dan integrasi**
+
+Dokumen ini berfungsi sebagai **blueprint sistem** sebelum masuk ke tahap pengembangan berikutnya:
+
+```
+
+Phase 1
+Backend Development
+↓
+Phase 2
+Frontend Development
+↓
+Phase 3
+Integration & Testing
+
+```
+
+Dengan blueprint ini, developer dan AI builder dapat membangun sistem funnel secara **konsisten, modular, dan terstruktur**.
+```

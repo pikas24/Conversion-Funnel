@@ -1,0 +1,978 @@
+## Phase 1 — Backend First Development Documentation
+
+Dokumen ini merupakan **Phase 1 — Backend First Development** untuk Conversion Funnel System yang digunakan oleh **Agency Nexus**.
+
+Dokumen ini melanjutkan **Phase 0 — System Planning & Documentation** dan berfokus pada:
+
+- Definisi schema database secara rinci
+- Spesifikasi API contract
+- Arsitektur backend service
+- Data validation rules
+- Automation trigger specification
+
+Tujuan utama dokumen ini adalah menyediakan **blueprint teknis backend** yang dapat langsung digunakan oleh developer sebelum implementasi frontend dimulai.
+
+---
+
+# 1. Database Schema Definition
+
+Database utama sistem menggunakan **Airtable** sebagai primary operational database untuk menyimpan data lead dan appointment.
+
+Struktur data terdiri dari dua entitas utama:
+
+```
+
+Leads
+↓
+Appointments
+
+```
+
+Artinya:
+
+```
+
+1 Lead → dapat memiliki banyak Appointment
+
+```
+
+Contoh:
+
+```
+
+Lead: Siti Rahma
+├ Facial Brightening (20 Mar)
+├ Laser Treatment (28 Mar)
+
+```
+
+---
+
+# 1.1 Table: Leads
+
+## Fungsi
+
+Tabel ini menyimpan **data calon pasien** yang mengisi form booking dari funnel system.
+
+Data ini digunakan untuk:
+
+- follow-up admin
+- lead management
+- conversion tracking
+- pipeline monitoring
+
+---
+
+## Fields
+
+### full_name
+
+Type: Single line text  
+Primary Key: Yes
+
+Deskripsi:
+
+Nama lengkap pasien yang melakukan booking.
+
+Contoh:
+
+```
+
+Siti Rahma
+
+```
+
+---
+
+### phone_number
+
+Type: Phone number
+
+Deskripsi:
+
+Nomor WhatsApp pasien yang akan digunakan untuk follow-up oleh admin klinik.
+
+Contoh:
+
+```
+
++6281234567890
+
+```
+
+---
+
+### email
+
+Type: Email
+
+Deskripsi:
+
+Alamat email pasien untuk komunikasi tambahan dan notifikasi.
+
+Contoh:
+
+```
+
+[siti@email.com](mailto:siti@email.com)
+
+```
+
+---
+
+### service_interest
+
+Type: Single line text
+
+Deskripsi:
+
+Layanan atau treatment yang diminati oleh calon pasien.
+
+Contoh:
+
+```
+
+Laser Treatment
+Facial Brightening
+Acne Treatment
+
+```
+
+---
+
+### status
+
+Type: Single Select
+
+Options:
+
+```
+
+New
+Contacted
+Qualified
+Converted
+Lost
+
+```
+
+Deskripsi:
+
+Status lead dalam pipeline konversi klinik.
+
+Default value:
+
+```
+
+New
+
+```
+
+---
+
+### source
+
+Type: Single Select
+
+Options:
+
+```
+
+landing_page
+referral
+social_media
+direct
+
+```
+
+Deskripsi:
+
+Sumber lead berasal.
+
+---
+
+### created_at
+
+Type: Date (include time)
+
+Deskripsi:
+
+Timestamp ketika lead dibuat oleh sistem.
+
+Format:
+
+```
+
+YYYY-MM-DD HH:mm:ss
+
+```
+
+Contoh:
+
+```
+
+2025-03-20 14:20:15
+
+```
+
+---
+
+### lead_score
+
+Type: Number (Integer)
+
+Deskripsi:
+
+Skor kualitas lead yang dihitung oleh sistem.
+
+Contoh:
+
+```
+
+75
+
+```
+
+Kategori:
+
+```
+
+80–100 → HOT
+50–79 → WARM
+0–49 → COLD
+
+```
+
+---
+
+### notes
+
+Type: Long Text
+
+Deskripsi:
+
+Catatan tambahan dari admin klinik.
+
+---
+
+### Appointments
+
+Type:
+
+```
+
+Link to another record → Appointments
+
+```
+
+Deskripsi:
+
+Relasi antara lead dan appointment.
+
+---
+
+# 1.2 Table: Appointments
+
+## Fungsi
+
+Tabel ini menyimpan **data booking appointment pasien**.
+
+---
+
+## Fields
+
+### requested_service
+
+Type: Single line text  
+Primary Key: Yes
+
+Deskripsi:
+
+Nama layanan yang dibooking oleh pasien.
+
+Contoh:
+
+```
+
+Laser Treatment
+Facial Brightening
+Skin Rejuvenation
+
+```
+
+---
+
+### lead_id
+
+Type:
+
+```
+
+Link to another record → Leads
+
+```
+
+Deskripsi:
+
+Field ini menghubungkan appointment dengan lead.
+
+---
+
+### preferred_date
+
+Type: Date
+
+Deskripsi:
+
+Tanggal yang dipilih pasien untuk appointment.
+
+Contoh:
+
+```
+
+2025-04-10
+
+```
+
+---
+
+### preferred_time
+
+Type: Single line text
+
+Format:
+
+```
+
+HH:mm
+
+```
+
+Contoh:
+
+```
+
+10:00
+14:30
+
+```
+
+---
+
+### appointment_status
+
+Type: Single Select
+
+Options:
+
+```
+
+Pending
+Confirmed
+Completed
+Cancelled
+No Show
+
+```
+
+Default:
+
+```
+
+Pending
+
+```
+
+---
+
+### created_at
+
+Type: Date (include time)
+
+Deskripsi:
+
+Timestamp ketika appointment dibuat oleh sistem.
+
+---
+
+### notes
+
+Type: Long Text
+
+Deskripsi:
+
+Catatan tambahan appointment.
+
+---
+
+# 1.3 Primary Key Definition
+
+Primary key digunakan untuk mengidentifikasi record secara unik.
+
+| Table | Primary Key |
+|-----|-----|
+| Leads | Airtable Record ID |
+| Appointments | Airtable Record ID |
+
+Walaupun Airtable menggunakan internal ID, secara logika sistem:
+
+```
+
+lead_id
+appointment_id
+
+```
+
+digunakan sebagai identifier.
+
+---
+
+# 1.4 Foreign Key Definition
+
+Foreign key digunakan untuk membangun relasi antar tabel.
+
+| Table | Foreign Key | Reference |
+|-----|-----|-----|
+| Appointments | lead_id | Leads |
+
+Artinya:
+
+```
+
+Appointments.lead_id → Leads.id
+
+```
+
+---
+
+# 1.5 Indexing Rules
+
+Untuk meningkatkan performa query dan filtering di Airtable, beberapa field perlu dioptimalkan.
+
+Fields yang sering digunakan untuk filtering:
+
+Leads Table:
+
+```
+
+phone_number
+status
+created_at
+lead_score
+
+```
+
+Appointments Table:
+
+```
+
+lead_id
+appointment_status
+preferred_date
+created_at
+
+```
+
+---
+
+# 2. API Contract Specification
+
+Backend menyediakan API endpoint untuk menangani proses booking dari frontend funnel.
+
+Endpoint utama sistem:
+
+```
+
+POST /api/bookings
+
+```
+
+Endpoint ini digunakan oleh **Booking Page** untuk membuat lead dan appointment baru.
+
+---
+
+# 2.1 Booking Endpoint
+
+Endpoint:
+
+```
+
+POST /api/bookings
+
+````
+
+Tujuan:
+
+Membuat lead baru dan appointment baru dalam satu proses.
+
+---
+
+# 2.2 Request Payload
+
+Contoh request:
+
+```json
+{
+  "full_name": "Siti Rahma",
+  "phone_number": "+6281234567890",
+  "email": "siti@email.com",
+  "service_interest": "Laser Treatment",
+  "preferred_date": "2025-04-10",
+  "preferred_time": "10:00"
+}
+````
+
+---
+
+# 2.3 Successful Response
+
+Response:
+
+```json
+{
+  "status": "success",
+  "booking_id": "apt_9f8a21d"
+}
+```
+
+Field:
+
+| Field      | Description     |
+| ---------- | --------------- |
+| status     | success / error |
+| booking_id | ID appointment  |
+
+---
+
+# 2.4 HTTP Status Codes
+
+| Code | Meaning               |
+| ---- | --------------------- |
+| 200  | Success               |
+| 400  | Bad Request           |
+| 422  | Validation Error      |
+| 500  | Internal Server Error |
+
+---
+
+# 2.5 Validation Error Example
+
+Response:
+
+```json
+{
+  "status": "error",
+  "error_code": "VALIDATION_ERROR",
+  "errors": [
+    {
+      "field": "phone_number",
+      "message": "Invalid phone number format"
+    }
+  ]
+}
+```
+
+---
+
+# 2.6 Internal Server Error Example
+
+Response:
+
+```json
+{
+  "status": "error",
+  "error_code": "INTERNAL_SERVER_ERROR",
+  "message": "Unexpected server error"
+}
+```
+
+---
+
+# 3. Backend Service Architecture
+
+Backend menggunakan **layered architecture** untuk menjaga modularitas dan maintainability sistem.
+
+---
+
+# 3.1 Backend Directory Structure
+
+Contoh struktur folder backend:
+
+```
+/backend
+   /api
+   /services
+   /validators
+   /repositories
+   /triggers
+   /config
+   /utils
+```
+
+---
+
+# 3.2 API Layer
+
+Folder:
+
+```
+/api
+```
+
+Fungsi:
+
+* menerima HTTP request
+* routing endpoint
+* memanggil validation layer
+* memanggil service layer
+
+Contoh file:
+
+```
+booking.controller.ts
+```
+
+---
+
+# 3.3 Validation Layer
+
+Folder:
+
+```
+/validators
+```
+
+Fungsi:
+
+* memvalidasi input request
+* memastikan data valid sebelum diproses
+
+Contoh file:
+
+```
+booking.validator.ts
+```
+
+---
+
+# 3.4 Service Layer
+
+Folder:
+
+```
+/services
+```
+
+Fungsi:
+
+* business logic
+* workflow booking
+* memanggil repository
+* memicu automation
+
+Contoh:
+
+```
+booking.service.ts
+```
+
+---
+
+# 3.5 Repository Layer
+
+Folder:
+
+```
+/repositories
+```
+
+Fungsi:
+
+* komunikasi dengan database
+* query database
+* menyimpan data
+
+Contoh:
+
+```
+lead.repository.ts
+appointment.repository.ts
+```
+
+---
+
+# 3.6 Trigger Layer
+
+Folder:
+
+```
+/triggers
+```
+
+Fungsi:
+
+* menjalankan automation event
+* mengirim notifikasi
+* memproses workflow async
+
+Contoh:
+
+```
+booking.trigger.ts
+```
+
+---
+
+# 3.7 Layer Architecture Flow
+
+```
+API Layer
+   ↓
+Validation Layer
+   ↓
+Service Layer
+   ↓
+Repository Layer
+   ↓
+Database
+```
+
+---
+
+# 4. Data Validation Rules
+
+Semua input dari frontend harus melalui validation layer.
+
+---
+
+# 4.1 Phone Number Rule
+
+Aturan:
+
+```
+harus dimulai dengan +62
+minimal 10 digit
+maksimal 15 digit
+```
+
+Contoh valid:
+
+```
++6281234567890
+```
+
+Contoh invalid:
+
+```
+081234567890
+```
+
+---
+
+# 4.2 Email Rule
+
+Harus mengikuti standar format email RFC.
+
+Contoh valid:
+
+```
+name@email.com
+```
+
+Contoh invalid:
+
+```
+name@email
+```
+
+---
+
+# 4.3 Service Rule
+
+Service yang dipilih harus ada dalam **service catalog**.
+
+Contoh:
+
+```
+Laser Treatment
+Acne Treatment
+Facial Brightening
+```
+
+---
+
+# 4.4 Date Rule
+
+Tanggal appointment tidak boleh di masa lalu.
+
+Contoh valid:
+
+```
+2025-04-10
+```
+
+Contoh invalid:
+
+```
+2023-01-01
+```
+
+---
+
+# 4.5 Time Rule
+
+Format:
+
+```
+HH:mm
+```
+
+Contoh:
+
+```
+10:00
+14:30
+```
+
+---
+
+# 4.6 Name Rule
+
+Minimal karakter:
+
+```
+3 karakter
+```
+
+---
+
+# 5. Automation Trigger Specification
+
+Backend menggunakan **event-driven automation system**.
+
+Event utama:
+
+```
+booking_created
+```
+
+---
+
+# 5.1 Booking Created Event
+
+Event ini terjadi ketika booking berhasil dibuat.
+
+Trigger:
+
+```
+send_telegram_notification
+send_email_notification
+```
+
+---
+
+# 5.2 Event Workflow
+
+```
+booking_created
+     ↓
+trigger_handler
+     ↓
+notification_service
+     ↓
+telegram_message
+     ↓
+email_message
+```
+
+---
+
+# 5.3 Telegram Notification
+
+Pesan dikirim ke:
+
+```
+Admin Group
+Owner Klinik
+```
+
+Contoh pesan:
+
+```
+BOOKING BARU – BELUM DIKONTAK
+
+Nama: Siti Rahma
+Treatment: Laser Treatment
+Tanggal: 10 April
+Jam: 10:00
+Phone: +6281234567890
+```
+
+---
+
+# 5.4 Email Notification
+
+Email dikirim ke:
+
+```
+admin klinik
+owner klinik
+```
+
+Isi email:
+
+* data pasien
+* detail appointment
+* instruksi follow-up
+
+---
+
+# 5.5 Automation Flow Summary
+
+```
+User Submit Form
+      ↓
+API Processing
+      ↓
+Create Lead
+      ↓
+Create Appointment
+      ↓
+Trigger Event booking_created
+      ↓
+Send Telegram Notification
+      ↓
+Send Email Notification
+      ↓
+Return Response
+```
+
+---
+
+# Conclusion
+
+Dokumen **Phase 1 — Backend First Development** mendefinisikan blueprint backend untuk Conversion Funnel System Agency Nexus.
+
+Dokumen ini mencakup:
+
+* database schema definition
+* API contract specification
+* backend service architecture
+* data validation rules
+* automation trigger specification
+
+Dengan pendekatan ini, backend dapat dibangun terlebih dahulu sebelum frontend dikembangkan pada:
+
+```
+Phase 2 — Frontend Development
+```
+
+Pendekatan **Backend First Development** memastikan bahwa:
+
+* struktur data stabil
+* API contract jelas
+* integrasi sistem lebih mudah
+* frontend dapat dikembangkan secara konsisten.
+
+```
+```

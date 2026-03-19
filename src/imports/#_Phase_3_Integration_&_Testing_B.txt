@@ -1,0 +1,567 @@
+# Phase 3 — Integration & Testing
+Conversion Funnel System — Agency Nexus
+
+Dokumen ini menjelaskan tahap **Phase 3 — Integration & Testing** pada pembangunan **Conversion Funnel System** milik Agency Nexus untuk klinik estetika dan kesehatan.
+
+Tujuan fase ini adalah memastikan bahwa seluruh komponen sistem:
+
+- Frontend Funnel Pages
+- Backend API
+- Database Airtable
+- Notification System (Telegram & Email)
+
+telah **terhubung dengan benar** dan **bekerja sesuai alur operasional yang dirancang** sebelum sistem digunakan secara aktif oleh klinik.
+
+---
+
+# 1. User Flow
+
+User Flow menjelaskan perjalanan pengguna dari pertama kali masuk ke funnel hingga proses booking berhasil dikirim dan diterima oleh admin klinik.
+
+Funnel terdiri dari tiga halaman utama:
+
+1. Landing Page  
+2. Booking Page  
+3. Confirmation Page  
+
+Tujuan utama funnel adalah mengarahkan pengguna untuk melakukan **Request Booking Konsultasi atau Treatment**.
+
+---
+
+## 1.1 Alur Pengguna
+
+Berikut alur lengkap pengguna dalam sistem funnel.
+
+```
+
+Traffic Source
+(Facebook Ads / Instagram Ads / Google Ads / Organic)
+↓
+Landing Page
+↓
+User membaca informasi klinik
+↓
+User klik CTA
+"Book Consultation"
+↓
+Redirect ke Booking Page
+↓
+User mengisi Form Booking
+↓
+User klik Submit
+↓
+Frontend memanggil API Backend
+POST /api/book-appointment
+↓
+Backend memproses request
+↓
+Validasi data
+↓
+Simpan Lead ke Airtable
+↓
+Buat Appointment di Airtable
+↓
+Trigger Telegram Notification
+↓
+Trigger Email Notification
+↓
+Backend mengirim response sukses
+↓
+Frontend redirect
+↓
+Confirmation Page
+↓
+User melihat pesan konfirmasi
+↓
+Admin klinik menerima notifikasi
+↓
+Admin melakukan follow-up dalam 15–30 menit
+
+```
+
+---
+
+## 1.2 Perpindahan Antar Halaman
+
+### Landing Page → Booking Page
+
+User berpindah halaman melalui tombol CTA seperti:
+
+- Book Consultation
+- Reserve Treatment
+- Schedule Appointment
+
+Klik tombol CTA akan melakukan redirect ke:
+
+```
+
+/booking
+
+```
+
+---
+
+### Booking Page → Confirmation Page
+
+Perpindahan halaman terjadi setelah:
+
+1. User submit form
+2. Backend berhasil memproses data
+3. Backend mengirim response sukses
+
+Jika berhasil:
+
+```
+
+Frontend redirect ke:
+
+/confirmation
+
+```
+
+---
+
+## 1.3 Waktu Pemanggilan API
+
+API dipanggil pada saat:
+
+```
+
+User klik tombol "Submit Booking"
+
+```
+
+Frontend akan mengirim request ke:
+
+```
+
+POST /api/book-appointment
+
+```
+
+---
+
+## 1.4 Waktu Pengiriman Notifikasi
+
+Notifikasi dikirim setelah:
+
+```
+
+Lead berhasil disimpan
+AND
+Appointment berhasil dibuat
+
+```
+
+Notifikasi yang dikirim:
+
+1. Telegram Notification → Admin klinik
+2. Email Notification → Email internal klinik
+
+---
+
+# 2. API Endpoints List
+
+Backend menggunakan **Supabase Serverless Functions** untuk memproses request dari frontend.
+
+Endpoint utama dalam sistem adalah endpoint untuk membuat booking appointment.
+
+---
+
+## 2.1 POST /api/book-appointment
+
+### Method
+
+```
+
+POST
+
+```
+
+### Endpoint Path
+
+```
+
+/api/book-appointment
+
+````
+
+### Tujuan Endpoint
+
+Endpoint ini bertanggung jawab untuk:
+
+- menerima data booking dari frontend
+- memvalidasi input
+- menyimpan data lead ke Airtable
+- membuat record appointment
+- mengirim notifikasi ke admin klinik
+
+---
+
+### Request Payload
+
+Contoh request payload yang dikirim dari frontend:
+
+```json
+{
+  "full_name": "Siti Rahma",
+  "phone_number": "081234567890",
+  "email": "siti@email.com",
+  "service_interest": "Facial Brightening",
+  "preferred_date": "2026-03-20",
+  "preferred_time": "10:00"
+}
+````
+
+---
+
+### Response Structure (Success)
+
+```json
+{
+  "success": true,
+  "message": "Booking request berhasil dikirim",
+  "data": {
+    "lead_id": "rec12345",
+    "appointment_id": "app67890"
+  }
+}
+```
+
+---
+
+### Response Structure (Validation Error)
+
+```json
+{
+  "success": false,
+  "error": "VALIDATION_ERROR",
+  "message": "Nomor telepon tidak valid"
+}
+```
+
+---
+
+### Response Structure (Server Error)
+
+```json
+{
+  "success": false,
+  "error": "SERVER_ERROR",
+  "message": "Terjadi kesalahan pada sistem"
+}
+```
+
+---
+
+# 3. Data Flow
+
+Bagian ini menjelaskan bagaimana data bergerak dari frontend hingga ke database dan sistem notifikasi.
+
+---
+
+## 3.1 Alur Data Sistem
+
+```
+User Input (Booking Form)
+        ↓
+Frontend Validation
+        ↓
+Validasi field wajib
+- full_name
+- phone_number
+- service_interest
+- preferred_date
+- preferred_time
+        ↓
+Submit Form
+        ↓
+POST /api/book-appointment
+        ↓
+Backend menerima request
+        ↓
+Backend Data Validation
+        ↓
+Cek format nomor telepon
+Cek field kosong
+Cek format email
+        ↓
+Create Lead
+Airtable → Table Leads
+        ↓
+Create Appointment
+Airtable → Table Appointments
+        ↓
+Generate lead_id
+        ↓
+Link appointment ke lead_id
+        ↓
+Trigger Telegram Notification
+        ↓
+Trigger Email Notification
+        ↓
+Return Success Response
+        ↓
+Frontend menerima response
+        ↓
+Redirect ke Confirmation Page
+```
+
+---
+
+# 4. Core User Scenarios
+
+Bagian ini menjelaskan skenario utama yang harus diuji sebelum sistem diluncurkan.
+
+---
+
+## Scenario 1 — User Berhasil Melakukan Booking
+
+### Kondisi Awal
+
+User berada di halaman Booking Page.
+
+### Langkah Pengguna
+
+1. User mengisi form booking
+2. User klik tombol submit
+
+### Respon Sistem
+
+* Frontend mengirim request ke backend
+* Backend memproses request
+* Data disimpan di Airtable
+* Notifikasi dikirim
+
+### Hasil yang Diharapkan
+
+* Lead berhasil tersimpan
+* Appointment berhasil dibuat
+* Notifikasi Telegram terkirim
+* Email notifikasi terkirim
+* User diarahkan ke Confirmation Page
+
+---
+
+## Scenario 2 — Data Tidak Valid
+
+### Kondisi Awal
+
+User mengisi form dengan data salah.
+
+Contoh:
+
+* nomor telepon kosong
+* format email salah
+
+### Langkah Pengguna
+
+User klik tombol submit.
+
+### Respon Sistem
+
+Frontend melakukan validasi.
+
+### Hasil yang Diharapkan
+
+* Form tidak dikirim
+* Pesan error muncul
+* User diminta memperbaiki data
+
+---
+
+## Scenario 3 — Koneksi API Gagal
+
+### Kondisi Awal
+
+Server backend tidak dapat diakses.
+
+### Langkah Pengguna
+
+User submit form booking.
+
+### Respon Sistem
+
+Frontend menerima error response.
+
+### Hasil yang Diharapkan
+
+* Pesan error muncul
+* User diminta mencoba kembali
+
+---
+
+## Scenario 4 — Data Tersimpan Tetapi Notifikasi Gagal
+
+### Kondisi Awal
+
+API Telegram atau email mengalami gangguan.
+
+### Langkah Pengguna
+
+User submit booking.
+
+### Respon Sistem
+
+* Data tetap disimpan
+* Sistem mencatat error notifikasi
+
+### Hasil yang Diharapkan
+
+* Lead tetap masuk ke database
+* Appointment tetap dibuat
+* Admin dapat melihat booking di Airtable
+
+---
+
+## Scenario 5 — User Submit Form Dua Kali
+
+### Kondisi Awal
+
+User menekan tombol submit dua kali.
+
+### Langkah Pengguna
+
+User klik submit lebih dari sekali.
+
+### Respon Sistem
+
+Backend harus menangani kemungkinan duplicate request.
+
+### Hasil yang Diharapkan
+
+* Tidak membuat duplicate appointment
+* Sistem tetap stabil
+
+---
+
+# 5. Test Data
+
+Berikut contoh data uji yang dapat digunakan untuk pengujian sistem.
+
+| Nama         | WhatsApp     | Email                                   | Layanan            | Tanggal    | Jam   |
+| ------------ | ------------ | --------------------------------------- | ------------------ | ---------- | ----- |
+| Siti Rahma   | 081234567890 | [siti@email.com](mailto:siti@email.com) | Facial Brightening | 2026-03-20 | 10:00 |
+| Andi Pratama | 081298765432 | [andi@email.com](mailto:andi@email.com) | Acne Treatment     | 2026-03-21 | 14:00 |
+| Rina Lestari | 081377889900 | [rina@email.com](mailto:rina@email.com) | Skin Rejuvenation  | 2026-03-22 | 11:30 |
+| Maya Putri   | 081355544433 | [maya@email.com](mailto:maya@email.com) | Laser Treatment    | 2026-03-23 | 16:00 |
+
+---
+
+# 6. Expected Outcomes
+
+Jika integrasi sistem berjalan dengan benar, maka hasil yang diharapkan adalah sebagai berikut.
+
+---
+
+## 6.1 Database Airtable
+
+Pada saat user melakukan booking:
+
+* record baru dibuat di **Table Leads**
+* record baru dibuat di **Table Appointments**
+
+Relasi antara keduanya:
+
+```
+Lead
+↓
+Appointment
+```
+
+---
+
+## 6.2 Default Status
+
+Default status yang harus diset:
+
+Leads Table
+
+```
+status = new
+lead_score = 0
+source = funnel
+```
+
+Appointments Table
+
+```
+appointment_status = requested
+```
+
+---
+
+## 6.3 Notifikasi Telegram
+
+Admin klinik menerima pesan seperti:
+
+```
+New Booking Request
+
+Nama: Siti Rahma
+WhatsApp: 081234567890
+Service: Facial Brightening
+Tanggal: 20 Maret 2026
+Jam: 10:00
+```
+
+---
+
+## 6.4 Email Notification
+
+Email dikirim ke email internal klinik berisi detail booking.
+
+Tujuan email:
+
+* backup notifikasi
+* dokumentasi booking
+
+---
+
+## 6.5 Redirect Confirmation Page
+
+Setelah proses berhasil:
+
+User otomatis diarahkan ke:
+
+```
+/confirmation
+```
+
+Halaman ini menampilkan pesan:
+
+* booking request telah diterima
+* admin akan menghubungi dalam 15–30 menit
+
+---
+
+## 6.6 Indikator Integrasi Berhasil
+
+Integrasi dianggap berhasil jika:
+
+* API endpoint merespon dengan sukses
+* Data tersimpan di Airtable
+* Appointment terhubung dengan lead
+* Telegram notification terkirim
+* Email notification terkirim
+* User diarahkan ke confirmation page
+
+Jika semua indikator tersebut terpenuhi, maka sistem **Conversion Funnel System siap untuk digunakan secara operasional oleh klinik**.
+
+---
+
+# Penutup
+
+Dokumen ini menjadi referensi teknis untuk memastikan bahwa seluruh komponen dalam **Conversion Funnel System — Agency Nexus** telah terintegrasi dengan baik.
+
+Phase 3 Integration & Testing memastikan bahwa:
+
+* frontend funnel bekerja dengan benar
+* backend API memproses data dengan stabil
+* database menyimpan data dengan konsisten
+* sistem notifikasi berjalan sesuai kebutuhan operasional klinik
+
+Setelah fase ini selesai dan seluruh pengujian berhasil, sistem siap untuk **deployment dan penggunaan oleh klinik estetika dan kesehatan**.
+
+```
+```
